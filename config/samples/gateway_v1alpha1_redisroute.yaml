@@ -1,0 +1,12 @@
+apiVersion: gateway.voyagermesh.com/v1alpha1
+kind: RedisRoute
+metadata:
+  labels:
+    app.kubernetes.io/name: redisroute
+    app.kubernetes.io/instance: redisroute-sample
+    app.kubernetes.io/part-of: gateway-api
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: gateway-api
+  name: redisroute-sample
+spec:
+  # TODO(user): Add fields here

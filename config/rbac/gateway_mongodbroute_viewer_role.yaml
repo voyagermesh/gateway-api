@@ -1,0 +1,27 @@
+# permissions for end users to view mongodbroutes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: mongodbroute-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: gateway-api
+    app.kubernetes.io/part-of: gateway-api
+    app.kubernetes.io/managed-by: kustomize
+  name: mongodbroute-viewer-role
+rules:
+- apiGroups:
+  - gateway.voyagermesh.com
+  resources:
+  - mongodbroutes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - gateway.voyagermesh.com
+  resources:
+  - mongodbroutes/status
+  verbs:
+  - get

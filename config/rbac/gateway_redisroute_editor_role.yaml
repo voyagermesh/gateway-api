@@ -1,0 +1,31 @@
+# permissions for end users to edit redisroutes.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: redisroute-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: gateway-api
+    app.kubernetes.io/part-of: gateway-api
+    app.kubernetes.io/managed-by: kustomize
+  name: redisroute-editor-role
+rules:
+- apiGroups:
+  - gateway.voyagermesh.com
+  resources:
+  - redisroutes
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - gateway.voyagermesh.com
+  resources:
+  - redisroutes/status
+  verbs:
+  - get

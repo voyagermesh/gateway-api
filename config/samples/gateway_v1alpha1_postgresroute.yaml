@@ -1,0 +1,12 @@
+apiVersion: gateway.voyagermesh.com/v1alpha1
+kind: PostgresRoute
+metadata:
+  labels:
+    app.kubernetes.io/name: postgresroute
+    app.kubernetes.io/instance: postgresroute-sample
+    app.kubernetes.io/part-of: gateway-api
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: gateway-api
+  name: postgresroute-sample
+spec:
+  # TODO(user): Add fields here
