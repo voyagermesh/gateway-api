@@ -43,6 +43,50 @@ spec:
           spec:
             description: Spec defines the desired state of MongoDBRoute.
             properties:
+              hostnames:
+                description: "Hostnames defines a set of SNI names that should match
+                  against the SNI attribute of TLS ClientHello message in TLS handshake.
+                  This matches the RFC 1123 definition of a hostname with 2 notable
+                  exceptions: \n 1. IPs are not allowed in SNI names per RFC 6066.
+                  2. A hostname may be prefixed with a wildcard label (`*.`). The
+                  wildcard label must appear by itself as the first label. \n If a
+                  hostname is specified by both the Listener and KafkaRoute, there
+                  must be at least one intersecting hostname for the KafkaRoute to
+                  be attached to the Listener. For example: \n * A Listener with `test.example.com`
+                  as the hostname matches KafkaRoutes that have either not specified
+                  any hostnames, or have specified at least one of `test.example.com`
+                  or `*.example.com`. * A Listener with `*.example.com` as the hostname
+                  matches KafkaRoutes that have either not specified any hostnames
+                  or have specified at least one hostname that matches the Listener
+                  hostname. For example, `test.example.com` and `*.example.com` would
+                  both match. On the other hand, `example.com` and `test.example.net`
+                  would not match. \n If both the Listener and KafkaRoute have specified
+                  hostnames, any KafkaRoute hostnames that do not match the Listener
+                  hostname MUST be ignored. For example, if a Listener specified `*.example.com`,
+                  and the KafkaRoute specified `test.example.com` and `test.example.net`,
+                  `test.example.net` must not be considered for a match. \n If both
+                  the Listener and KafkaRoute have specified hostnames, and none match
+                  with the criteria above, then the KafkaRoute is not accepted. The
+                  implementation must raise an 'Accepted' Condition with a status
+                  of `False` in the corresponding RouteParentStatus. \n Support: Core"
+                items:
+                  description: "Hostname is the fully qualified domain name of a network
+                    host. This matches the RFC 1123 definition of a hostname with
+                    2 notable exceptions: \n 1. IPs are not allowed. 2. A hostname
+                    may be prefixed with a wildcard label (`*.`). The wildcard label
+                    must appear by itself as the first label. \n Hostname can be \"precise\"
+                    which is a domain name without the terminating dot of a network
+                    host (e.g. \"foo.example.com\") or \"wildcard\", which is a domain
+                    name prefixed with a single wildcard label (e.g. `*.example.com`).
+                    \n Note that as per RFC1035 and RFC1123, a *label* must consist
+                    of lower case alphanumeric characters or '-', and must start and
+                    end with an alphanumeric character. No other punctuation is allowed."
+                  maxLength: 253
+                  minLength: 1
+                  pattern: ^(\*\.)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$
+                  type: string
+                maxItems: 16
+                type: array
               parentRefs:
                 description: "ParentRefs references the resources (usually Gateways)
                   that a Route wants to be attached to. Note that the referenced parent
@@ -266,6 +310,28 @@ spec:
                         type: object
                       maxItems: 16
                       minItems: 1
+                      type: array
+                    filters:
+                      description: "Filters define the filters that are applied to
+                        requests that match this rule. \n The effects of ordering
+                        of multiple behaviors are currently unspecified. This can
+                        change in the future based on feedback during the alpha stage.
+                        \n Conformance-levels at this level are defined based on the
+                        type of filter: \n - ALL core filters MUST be supported by
+                        all implementations. - Implementers are encouraged to support
+                        extended filters. - Implementation-specific custom filters
+                        have no API guarantees across implementations. \n Specifying
+                        a core filter multiple times has unspecified or implementation-specific
+                        conformance. \n All filters are expected to be compatible
+                        with each other except for the URLRewrite and RequestRedirect
+                        filters, which may not be combined. If an implementation can
+                        not support other combinations of filters, they must clearly
+                        document that limitation. In all cases where incompatible
+                        or unsupported filters are specified, implementations MUST
+                        add a warning condition to status. \n Support: Core"
+                      items:
+                        type: object
+                      maxItems: 16
                       type: array
                   type: object
                 maxItems: 16

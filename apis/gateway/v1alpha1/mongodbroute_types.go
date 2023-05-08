@@ -45,6 +45,44 @@ type MongoDBRoute struct {
 type MongoDBRouteSpec struct {
 	gwv1beta1.CommonRouteSpec `json:",inline"`
 
+	// Hostnames defines a set of SNI names that should match against the
+	// SNI attribute of TLS ClientHello message in TLS handshake. This matches
+	// the RFC 1123 definition of a hostname with 2 notable exceptions:
+	//
+	// 1. IPs are not allowed in SNI names per RFC 6066.
+	// 2. A hostname may be prefixed with a wildcard label (`*.`). The wildcard
+	//    label must appear by itself as the first label.
+	//
+	// If a hostname is specified by both the Listener and KafkaRoute, there
+	// must be at least one intersecting hostname for the KafkaRoute to be
+	// attached to the Listener. For example:
+	//
+	// * A Listener with `test.example.com` as the hostname matches KafkaRoutes
+	//   that have either not specified any hostnames, or have specified at
+	//   least one of `test.example.com` or `*.example.com`.
+	// * A Listener with `*.example.com` as the hostname matches KafkaRoutes
+	//   that have either not specified any hostnames or have specified at least
+	//   one hostname that matches the Listener hostname. For example,
+	//   `test.example.com` and `*.example.com` would both match. On the other
+	//   hand, `example.com` and `test.example.net` would not match.
+	//
+	// If both the Listener and KafkaRoute have specified hostnames, any
+	// KafkaRoute hostnames that do not match the Listener hostname MUST be
+	// ignored. For example, if a Listener specified `*.example.com`, and the
+	// KafkaRoute specified `test.example.com` and `test.example.net`,
+	// `test.example.net` must not be considered for a match.
+	//
+	// If both the Listener and KafkaRoute have specified hostnames, and none
+	// match with the criteria above, then the KafkaRoute is not accepted. The
+	// implementation must raise an 'Accepted' Condition with a status of
+	// `False` in the corresponding RouteParentStatus.
+	//
+	// Support: Core
+	//
+	// +optional
+	// +kubebuilder:validation:MaxItems=16
+	Hostnames []gwv1beta1.Hostname `json:"hostnames,omitempty"`
+
 	// Rules are a list of TCP matchers and actions.
 	//
 	// +kubebuilder:validation:MinItems=1
@@ -59,6 +97,34 @@ type MongoDBRouteStatus struct {
 
 // MongoDBRouteRule is the configuration for a given rule.
 type MongoDBRouteRule struct {
+	// Filters define the filters that are applied to requests that match
+	// this rule.
+	//
+	// The effects of ordering of multiple behaviors are currently unspecified.
+	// This can change in the future based on feedback during the alpha stage.
+	//
+	// Conformance-levels at this level are defined based on the type of filter:
+	//
+	// - ALL core filters MUST be supported by all implementations.
+	// - Implementers are encouraged to support extended filters.
+	// - Implementation-specific custom filters have no API guarantees across
+	//   implementations.
+	//
+	// Specifying a core filter multiple times has unspecified or
+	// implementation-specific conformance.
+	//
+	// All filters are expected to be compatible with each other except for the
+	// URLRewrite and RequestRedirect filters, which may not be combined. If an
+	// implementation can not support other combinations of filters, they must clearly
+	// document that limitation. In all cases where incompatible or unsupported
+	// filters are specified, implementations MUST add a warning condition to status.
+	//
+	// Support: Core
+	//
+	// +optional
+	// +kubebuilder:validation:MaxItems=16
+	Filters []RouteFilter `json:"filters,omitempty"`
+
 	// BackendRefs defines the backend(s) where matching requests should be
 	// sent. If unspecified or invalid (refers to a non-existent resource or a
 	// Service with no endpoints), the underlying implementation MUST actively
