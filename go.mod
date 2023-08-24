@@ -1,6 +1,6 @@
 module voyagermesh.dev/gateway-api
 
-go 1.21
+go 1.20
 
 require (
 	k8s.io/apimachinery v0.27.4
