@@ -18,3 +18,18 @@ package v1alpha1
 
 type RouteFilter struct {
 }
+
+type TelemetryRefence struct {
+	Reference string `json:"ref,omitempty"`
+}
+
+type TelemetryConfig struct {
+	Name         string       `json:"name,omitempty"`
+	SamplingRate int          `json:"samplingRate,omitempty"`
+	Provider     OtelProvider `json:"provider,omitempty"`
+}
+
+type OtelProvider struct {
+	Host string `json:"host,omitempty"`
+	Port int32  `json:"port,omitempty"`
+}
