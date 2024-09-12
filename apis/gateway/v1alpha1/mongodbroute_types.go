@@ -18,7 +18,7 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	gwv1beta1 "sigs.k8s.io/gateway-api/apis/v1beta1"
+	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
 
 // +kubebuilder:object:root=true
@@ -43,7 +43,7 @@ type MongoDBRoute struct {
 
 // MongoDBRouteSpec defines the desired state of MongoDBRoute
 type MongoDBRouteSpec struct {
-	gwv1beta1.CommonRouteSpec `json:",inline"`
+	gwv1.CommonRouteSpec `json:",inline"`
 
 	// Hostnames defines a set of SNI names that should match against the
 	// SNI attribute of TLS ClientHello message in TLS handshake. This matches
@@ -81,7 +81,7 @@ type MongoDBRouteSpec struct {
 	//
 	// +optional
 	// +kubebuilder:validation:MaxItems=16
-	Hostnames []gwv1beta1.Hostname `json:"hostnames,omitempty"`
+	Hostnames []gwv1.Hostname `json:"hostnames,omitempty"`
 
 	// Rules are a list of TCP matchers and actions.
 	//
@@ -92,7 +92,7 @@ type MongoDBRouteSpec struct {
 
 // MongoDBRouteStatus defines the observed state of MongoDBRoute
 type MongoDBRouteStatus struct {
-	gwv1beta1.RouteStatus `json:",inline"`
+	gwv1.RouteStatus `json:",inline"`
 }
 
 // MongoDBRouteRule is the configuration for a given rule.
@@ -142,7 +142,7 @@ type MongoDBRouteRule struct {
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	BackendRefs []gwv1beta1.BackendRef `json:"backendRefs,omitempty"`
+	BackendRefs []gwv1.BackendRef `json:"backendRefs,omitempty"`
 }
 
 // +kubebuilder:object:root=true
