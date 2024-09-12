@@ -88,6 +88,9 @@ type PostgresRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
 	Rules []PostgresRouteRule `json:"rules"`
+
+	// +optional
+	Telemetry TelemetryRefence `json:"telemetry"`
 }
 
 // PostgresRouteStatus defines the observed state of PostgresRoute
