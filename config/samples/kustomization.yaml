@@ -1,0 +1,8 @@
+## Append samples of your project ##
+resources:
+- gateway_v1alpha1_kafkaroute.yaml
+- gateway_v1alpha1_mongodbroute.yaml
+- gateway_v1alpha1_mysqlroute.yaml
+- gateway_v1alpha1_postgresroute.yaml
+- gateway_v1alpha1_redisroute.yaml
+# +kubebuilder:scaffold:manifestskustomizesamples

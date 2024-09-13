@@ -2,11 +2,8 @@ apiVersion: gateway.voyagermesh.com/v1alpha1
 kind: MySQLRoute
 metadata:
   labels:
-    app.kubernetes.io/name: mysqlroute
-    app.kubernetes.io/instance: mysqlroute-sample
-    app.kubernetes.io/part-of: gateway-api
+    app.kubernetes.io/name: gateway-api
     app.kubernetes.io/managed-by: kustomize
-    app.kubernetes.io/created-by: gateway-api
   name: mysqlroute-sample
 spec:
   # TODO(user): Add fields here
