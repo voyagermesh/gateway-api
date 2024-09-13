@@ -88,6 +88,22 @@ type RedisRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
 	Rules []RedisRouteRule `json:"rules"`
+
+	//+optional
+	DownstreamAuthSecretRefs []AuthSecretRefWithKeys `json:"downstreamAuthSecretRefs,omitempty" yaml:"downstreamAuthSecretRefs,omitempty"`
+
+	//+optional
+	UpstreamAuthSecretRef AuthSecretRef `json:"upstreamAuthSecretRef,omitempty" yaml:"upstreamAuthSecretRef,omitempty"`
+}
+
+type AuthSecretRef struct {
+	Name      string `json:"name" yaml:"name"`
+	Namespace string `json:"namespace" yaml:"namespace"`
+}
+
+type AuthSecretRefWithKeys struct {
+	AuthSecretRef
+	Keys []string `json:"keys,omitempty" yaml:"keys,omitempty"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
