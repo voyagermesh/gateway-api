@@ -48,6 +48,22 @@ spec:
           spec:
             description: Spec defines the desired state of RedisRoute.
             properties:
+              downstreamAuthSecretRefs:
+                items:
+                  properties:
+                    keys:
+                      items:
+                        type: string
+                      type: array
+                    name:
+                      type: string
+                    namespace:
+                      type: string
+                  required:
+                  - name
+                  - namespace
+                  type: object
+                type: array
               hostnames:
                 description: |-
                   Hostnames defines a set of SNI names that should match against the
@@ -499,6 +515,16 @@ spec:
                 maxItems: 16
                 minItems: 1
                 type: array
+              upstreamAuthSecretRef:
+                properties:
+                  name:
+                    type: string
+                  namespace:
+                    type: string
+                required:
+                - name
+                - namespace
+                type: object
             required:
             - rules
             type: object
