@@ -102,8 +102,8 @@ type AuthSecretRef struct {
 }
 
 type AuthSecretRefWithKeys struct {
-	AuthSecretRef
-	Keys []string `json:"keys,omitempty" yaml:"keys,omitempty"`
+	AuthSecretRef `json:",inline"`
+	Keys          []string `json:"keys,omitempty" yaml:"keys,omitempty"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
