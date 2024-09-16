@@ -89,9 +89,13 @@ type RedisRouteSpec struct {
 	// +kubebuilder:validation:MaxItems=16
 	Rules []RedisRouteRule `json:"rules"`
 
+	// DownstreamAuthSecretRefs refers to the secrets with corresponding keys for passwords to use as downstream_auth_passwords
+	// reference: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/redis_proxy/v3/redis_proxy.proto#:~:text=Use%20downstream_auth_passwords.-,downstream_auth_passwords,sent%20AUTH%2C%20but%20no%20password%20is%20set%E2%80%9D%20error%20will%20be%20returned.,-faults
 	//+optional
 	DownstreamAuthSecretRefs []AuthSecretRefWithKeys `json:"downstreamAuthSecretRefs,omitempty" yaml:"downstreamAuthSecretRefs,omitempty"`
 
+	// UpstreamAuthSecretRef refers to the secret with username and password used to authenticate to the redis backend
+	// reference: https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/filters/network/redis_proxy/v3/redis_proxy.proto#extensions-filters-network-redis-proxy-v3-redisprotocoloptions:~:text=...%7D%0A%7D-,auth_password,directive%20https%3A//redis.io/topics/acl%20in%20the%20server%E2%80%99s%20configuration%20file.,-extensions.filters.network
 	//+optional
 	UpstreamAuthSecretRef AuthSecretRef `json:"upstreamAuthSecretRef,omitempty" yaml:"upstreamAuthSecretRef,omitempty"`
 }
