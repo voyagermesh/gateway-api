@@ -21,6 +21,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	corev1 "k8s.io/api/core/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -663,6 +664,11 @@ func (in *RedisRouteSpec) DeepCopyInto(out *RedisRouteSpec) {
 		for i := range *in {
 			(*in)[i].DeepCopyInto(&(*out)[i])
 		}
+	}
+	if in.AuthSecret != nil {
+		in, out := &in.AuthSecret, &out.AuthSecret
+		*out = new(corev1.SecretReference)
+		**out = **in
 	}
 }
 

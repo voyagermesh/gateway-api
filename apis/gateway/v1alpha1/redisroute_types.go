@@ -17,6 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -88,6 +89,9 @@ type RedisRouteSpec struct {
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
 	Rules []RedisRouteRule `json:"rules"`
+
+	// AuthSecret is used for downstream and upstream authentication
+	AuthSecret *core.SecretReference `json:"authSecret,omitempty"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute

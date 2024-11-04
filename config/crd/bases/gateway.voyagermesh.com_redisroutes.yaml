@@ -48,6 +48,19 @@ spec:
           spec:
             description: Spec defines the desired state of RedisRoute.
             properties:
+              authSecret:
+                description: AuthSecret is used for downstream and upstream authentication
+                properties:
+                  name:
+                    description: name is unique within a namespace to reference a
+                      secret resource.
+                    type: string
+                  namespace:
+                    description: namespace defines the space within which the secret
+                      name must be unique.
+                    type: string
+                type: object
+                x-kubernetes-map-type: atomic
               hostnames:
                 description: |-
                   Hostnames defines a set of SNI names that should match against the
