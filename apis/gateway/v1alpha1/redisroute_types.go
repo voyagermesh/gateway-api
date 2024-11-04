@@ -17,7 +17,7 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1 "k8s.io/api/core/v1"
+	core "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	gwv1 "sigs.k8s.io/gateway-api/apis/v1"
 )
@@ -91,7 +91,7 @@ type RedisRouteSpec struct {
 	Rules []RedisRouteRule `json:"rules"`
 
 	// AuthSecret is used for downstream and upstream authentication
-	AuthSecret *v1.SecretReference `json:"authSecret,omitempty"`
+	AuthSecret *core.SecretReference `json:"authSecret,omitempty"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
