@@ -9,10 +9,13 @@ spec:
   group: gateway.voyagermesh.com
   names:
     categories:
-    - gateway-api
+    - route
+    - appscode
     kind: KafkaRoute
     listKind: KafkaRouteList
     plural: kafkaroutes
+    shortNames:
+    - kfroute
     singular: kafkaroute
   scope: Namespaced
   versions:
