@@ -100,7 +100,7 @@ type MongoDBRouteSpec struct {
 	// Horizons specifies the information about replicaset horizons.
 	// rs.conf().members[*].horizons field will be populated using this
 	// +optional
-	Horizons *Horizons `json:"horizons,omitempty"`
+	Horizons Horizons `json:"horizons,omitempty"`
 }
 
 type Horizons struct {
