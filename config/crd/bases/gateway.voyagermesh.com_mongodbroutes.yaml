@@ -51,6 +51,39 @@ spec:
           spec:
             description: Spec defines the desired state of MongoDBRoute.
             properties:
+              horizons:
+                description: |-
+                  Horizons specifies the information about replicaset horizons.
+                  rs.conf().members[*].horizons field will be populated using this
+                properties:
+                  serviceRef:
+                    properties:
+                      name:
+                        description: Name is the name of the referent.
+                        maxLength: 253
+                        minLength: 1
+                        type: string
+                      namespace:
+                        description: |-
+                          Namespace is the namespace of the referenced object. When unspecified, the local
+                          namespace is inferred.
+
+                          Note that when a namespace different than the local namespace is specified,
+                          a ReferenceGrant object is required in the referent namespace to allow that
+                          namespace's owner to accept the reference. See the ReferenceGrant
+                          documentation for details.
+
+                          Support: Core
+                        maxLength: 63
+                        minLength: 1
+                        pattern: ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$
+                        type: string
+                    required:
+                    - name
+                    type: object
+                required:
+                - serviceRef
+                type: object
               hostnames:
                 description: |-
                   Hostnames defines a set of SNI names that should match against the
