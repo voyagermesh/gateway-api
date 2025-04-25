@@ -95,16 +95,16 @@ type MongoDBRouteSpec struct {
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	Rules []MongoDBRouteRule `json:"rules"`
+	Rules []MongoDBRouteRule `json:"rules,omitempty"`
 
 	// Horizons specifies the information about replicaset horizons.
 	// rs.conf().members[*].horizons field will be populated using this
 	// +optional
-	Horizons Horizons `json:"horizons,omitempty"`
+	Horizons *Horizons `json:"horizons,omitempty"`
 }
 
 type Horizons struct {
-	ServiceRef ServiceRef `json:"serviceRef"`
+	BackendRef gwv1.BackendRef `json:"backendRef"`
 }
 
 // MongoDBRouteStatus defines the observed state of MongoDBRoute
