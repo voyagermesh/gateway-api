@@ -100,6 +100,15 @@ type RedisRouteSpec struct {
 
 	// AuthSecret is used for downstream and upstream authentication
 	AuthSecret *core.SecretReference `json:"authSecret,omitempty"`
+	// Announce specifies the information about redis cluster backend reference.
+	// This field will create tcproute for all redis cluster replicas for
+	// creating a redis cluster using `cluster-announce-ip/hostname/port/tls-port/bus-port`
+	// +optional
+	Announce *Announce `json:"announce,omitempty"`
+}
+
+type Announce struct {
+	BackendRef gwv1.BackendRef `json:"backendRef"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
