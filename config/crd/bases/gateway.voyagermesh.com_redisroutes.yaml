@@ -176,8 +176,12 @@ spec:
                     - message: Must have port for Service reference
                       rule: '(size(self.group) == 0 && self.kind == ''Service'') ?
                         has(self.port) : true'
+                  shardReplicas:
+                    format: int32
+                    type: integer
                 required:
                 - backendRef
+                - shardReplicas
                 type: object
               authSecret:
                 description: AuthSecret is used for downstream and upstream authentication
@@ -643,8 +647,6 @@ spec:
                 maxItems: 16
                 minItems: 1
                 type: array
-            required:
-            - rules
             type: object
           status:
             description: Status defines the current state of RedisRoute.
