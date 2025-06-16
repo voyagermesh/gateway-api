@@ -96,7 +96,7 @@ type RedisRouteSpec struct {
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	Rules []RedisRouteRule `json:"rules"`
+	Rules []RedisRouteRule `json:"rules,omitempty"`
 
 	// AuthSecret is used for downstream and upstream authentication
 	AuthSecret *core.SecretReference `json:"authSecret,omitempty"`
@@ -108,7 +108,8 @@ type RedisRouteSpec struct {
 }
 
 type Announce struct {
-	BackendRef gwv1.BackendRef `json:"backendRef"`
+	ShardReplicas int32           `json:"shardReplicas"`
+	BackendRef    gwv1.BackendRef `json:"backendRef"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
