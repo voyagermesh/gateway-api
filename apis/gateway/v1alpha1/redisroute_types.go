@@ -108,8 +108,13 @@ type RedisRouteSpec struct {
 }
 
 type Announce struct {
-	ShardReplicas int32           `json:"shardReplicas"`
-	BackendRef    gwv1.BackendRef `json:"backendRef"`
+	// ShardReplicas is the number of replicas per shard.
+	// This field helps to bind gateway listeners with redis replicas.
+	// Example: (<name><shard-number>-<replica-number>)
+	// Find the listener using (shard-number*shardReplicas + replica-number)
+	ShardReplicas int32 `json:"shardReplicas"`
+	// BackendRef is the reference to the redis cluster governing service.
+	BackendRef gwv1.BackendRef `json:"backendRef"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
