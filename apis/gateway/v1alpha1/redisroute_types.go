@@ -96,10 +96,25 @@ type RedisRouteSpec struct {
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	Rules []RedisRouteRule `json:"rules"`
+	Rules []RedisRouteRule `json:"rules,omitempty"`
 
 	// AuthSecret is used for downstream and upstream authentication
 	AuthSecret *core.SecretReference `json:"authSecret,omitempty"`
+	// Announce specifies the information about redis cluster backend reference.
+	// This field will create tcproute for all redis cluster replicas for
+	// creating a redis cluster using `cluster-announce-ip/hostname/port/tls-port/bus-port`
+	// +optional
+	Announce *Announce `json:"announce,omitempty"`
+}
+
+type Announce struct {
+	// ShardReplicas is the number of replicas per shard.
+	// This field helps to bind gateway listeners with redis replicas.
+	// Example: (<name><shard-number>-<replica-number>)
+	// Find the listener using (shard-number*shardReplicas + replica-number)
+	ShardReplicas int32 `json:"shardReplicas"`
+	// BackendRef is the reference to the redis cluster governing service.
+	BackendRef gwv1.BackendRef `json:"backendRef"`
 }
 
 // RedisRouteStatus defines the observed state of RedisRoute
