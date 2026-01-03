@@ -83,6 +83,7 @@ spec:
                   type: object
                 maxItems: 32
                 type: array
+                x-kubernetes-list-type: atomic
               rules:
                 items:
                   properties:
@@ -149,6 +150,11 @@ spec:
                   ref:
                     type: string
                 type: object
+              useDefaultGateways:
+                enum:
+                - All
+                - None
+                type: string
             required:
             - rules
             type: object
@@ -239,11 +245,13 @@ spec:
                       - name
                       type: object
                   required:
+                  - conditions
                   - controllerName
                   - parentRef
                   type: object
                 maxItems: 32
                 type: array
+                x-kubernetes-list-type: atomic
             required:
             - parents
             type: object
