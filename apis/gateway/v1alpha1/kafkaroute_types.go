@@ -22,7 +22,8 @@ import (
 )
 
 const (
-	ResourceCodeKafkaRoute     = "kfroute"
+	ResourceCodeKafkaRoute = "kfroute"
+
 	ResourceKindKafkaRoute     = "KafkaRoute"
 	ResourceSingularKafkaRoute = "kafkaroute"
 	ResourcePluralKafkaRoute   = "kafkaroutes"
