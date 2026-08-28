@@ -3,6 +3,7 @@
 # It should be run by config/default
 resources:
 - bases/gateway.voyagermesh.com_databaseaccesspolicies.yaml
+- bases/gateway.voyagermesh.com_databaseauditpolicies.yaml
 - bases/gateway.voyagermesh.com_databasemaskingpolicies.yaml
 - bases/gateway.voyagermesh.com_kafkaroutes.yaml
 - bases/gateway.voyagermesh.com_mongodbroutes.yaml
