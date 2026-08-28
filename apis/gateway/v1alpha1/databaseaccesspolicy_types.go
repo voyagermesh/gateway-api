@@ -133,13 +133,24 @@ type AccessRule struct {
 	// When is a CEL expression returning bool, evaluated against the statement
 	// envelope. Examples:
 	//
-	//   request.query.operation == "update"
+	//   request.query.operation == "UPDATE"
 	//   "dba" in request.identity.roles
 	//   request.query.risk_score >= 80
 	//
+	// NOTE THE CASING, and note that this example previously read "update".
+	// Postgres, MySQL and MSSQL all stamp query.operation in UPPER CASE;
+	// MongoDB stamps the driver's own command names, which are lower and camel
+	// case ("update", "findAndModify"). A rule with the wrong casing compiles,
+	// loads, evaluates on every statement and never matches -- measured: a
+	// lowercase rule let a real UPDATE straight through a DENY.
+	//
 	// A field path that does not exist evaluates false and the rule silently
 	// never matches, so an expression referencing a misspelled field is
-	// indistinguishable from one that simply never fires.
+	// indistinguishable from one that simply never fires. Measured against the
+	// filter rather than assumed: a DENY rule naming a misspelled field left
+	// eval_errors, denies and rule_matches all at zero while evaluations
+	// counted 1, and the statement went through. Nothing in the data plane
+	// reports it, so the mistake has to be caught where the rule is written.
 	//
 	// +kubebuilder:validation:MinLength=1
 	When string `json:"when"`
