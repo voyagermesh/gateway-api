@@ -2,9 +2,14 @@
 # since it depends on service name and namespace that are out of this kustomize package.
 # It should be run by config/default
 resources:
+- bases/gateway.voyagermesh.com_databasemaskingpolicies.yaml
 - bases/gateway.voyagermesh.com_kafkaroutes.yaml
 - bases/gateway.voyagermesh.com_mongodbroutes.yaml
+# mssqlserverroutes and oracleroutes were missing from this list although both
+# CRDs exist in bases/ -- so kustomize never installed them.
+- bases/gateway.voyagermesh.com_mssqlserverroutes.yaml
 - bases/gateway.voyagermesh.com_mysqlroutes.yaml
+- bases/gateway.voyagermesh.com_oracleroutes.yaml
 - bases/gateway.voyagermesh.com_postgresroutes.yaml
 - bases/gateway.voyagermesh.com_redisroutes.yaml
 # +kubebuilder:scaffold:crdkustomizeresource
