@@ -96,25 +96,69 @@ type DatabaseAuditPolicySpec struct {
 }
 
 // AuditSinkType selects the sink implementation.
-// +kubebuilder:validation:Enum=File
+// +kubebuilder:validation:Enum=File;OTLP
 type AuditSinkType string
 
 const (
 	// AuditSinkTypeFile writes one JSON record per line to a path inside the
 	// proxy container.
 	AuditSinkTypeFile AuditSinkType = "File"
+
+	// AuditSinkTypeOTLP streams records to an OpenTelemetry collector over
+	// gRPC, from the proxy itself. Nothing is written to disk and nothing
+	// tails a file, so records reach a collector as they are produced.
+	//
+	// The record carries the same fields the file sink writes -- the
+	// statement envelope as the log body, and ts, ns, conn_id and event_kind
+	// as attributes. event_kind is not optional: the audit filter samples a
+	// shared, mutable metadata namespace on every read and write pass, so a
+	// record emitted when the statement has just changed still carries the
+	// previous statement's response counters. A consumer that ignores
+	// event_kind will report exposures that never happened.
+	AuditSinkTypeOTLP AuditSinkType = "OTLP"
 )
 
 // AuditSink is one destination for audit records.
 // +kubebuilder:validation:XValidation:rule="self.type != 'File' || has(self.file)",message="file is required when type is File"
+// +kubebuilder:validation:XValidation:rule="self.type != 'OTLP' || has(self.otlp)",message="otlp is required when type is OTLP"
 type AuditSink struct {
 	// Type of sink.
 	Type AuditSinkType `json:"type"`
+
+	// OTLP configures an OpenTelemetry sink.
+	//
+	// +optional
+	OTLP *OTLPAuditSink `json:"otlp,omitempty"`
 
 	// File configures a file sink.
 	//
 	// +optional
 	File *FileAuditSink `json:"file,omitempty"`
+}
+
+// OTLPAuditSink streams audit records to an OpenTelemetry collector.
+type OTLPAuditSink struct {
+	// Host of the collector's OTLP gRPC endpoint. A Kubernetes service name
+	// is the usual answer; it is resolved by the proxy, so it must be
+	// reachable from the proxy's own namespace.
+	//
+	// +kubebuilder:validation:MinLength=1
+	Host string `json:"host"`
+
+	// Port of the collector's OTLP gRPC endpoint.
+	//
+	// +kubebuilder:default=4317
+	// +kubebuilder:validation:Minimum=1
+	// +kubebuilder:validation:Maximum=65535
+	// +optional
+	Port int32 `json:"port,omitempty"`
+
+	// LogName identifies this stream to the collector, so records from two
+	// databases can be told apart without parsing them.
+	//
+	// +kubebuilder:default=kubedb-dam-audit
+	// +optional
+	LogName string `json:"logName,omitempty"`
 }
 
 // FileAuditSink writes audit records to a path in the proxy container.
