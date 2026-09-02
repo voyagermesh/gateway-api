@@ -63,29 +63,26 @@ type DatabaseAccessPolicySpec struct {
 	// +kubebuilder:validation:MaxItems=16
 	TargetRefs []gwv1.LocalPolicyTargetReferenceWithSectionName `json:"targetRefs"`
 
-	// Rules form an ALLOWLIST. A statement that no ALLOW rule matches is
-	// denied.
+	// Rules form an ALLOWLIST. A statement matching NO rule is denied.
 	//
 	// Every rule is evaluated -- there is no short-circuit -- and the outcome
 	// is decided by action rather than by position:
 	//
-	//	any DENY  -> denied
-	//	else any ALLOW -> permitted
-	//	else      -> denied, implicitly
+	//	any DENY match  -> denied
+	//	any other match -> permitted
+	//	no match at all -> denied, implicitly
+	//
+	// Only DENY refuses. ALLOW permits silently, LOG permits and records,
+	// ALERT permits and raises -- so a rule set of nothing but LOG rules is a
+	// valid allowlist: it permits what it logs and the implicit rule refuses
+	// the rest.
 	//
 	// Deciding by action means a carve-out cannot be defeated by where someone
-	// put it in the list. LOG and ALERT are telemetry: they never decide
-	// anything, and a statement matching only those is denied by the implicit
-	// rule.
-	//
-	// At least one ALLOW is required. Without it the policy permits nothing and
-	// every connection dies on its first statement, while the listener reports
-	// healthy -- a database closed by accident and reported fine.
+	// put it in the list.
 	//
 	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=64
 	// +kubebuilder:validation:items:XValidation:rule="self.action != 'DENY' || has(self.severity)",message="severity is required for DENY rules"
-	// +kubebuilder:validation:XValidation:rule="self.exists(r, r.action == 'ALLOW')",message="at least one ALLOW rule is required: rules are an allowlist, so without one this policy permits nothing and every statement is denied"
 	// +listType=atomic
 	Rules []AccessRule `json:"rules"`
 
@@ -105,24 +102,23 @@ type DatabaseAccessPolicySpec struct {
 
 // RuleAction is what happens when a rule matches.
 //
-// Only ALLOW and DENY decide anything. LOG and ALERT observe.
+// Only DENY refuses. Every other action permits.
 //
 // +kubebuilder:validation:Enum=LOG;ALERT;DENY;ALLOW
 type RuleAction string
 
 const (
-	// RuleActionLog records the match. It does NOT let the statement through:
-	// a statement whose only match is a LOG rule is denied by the implicit
-	// rule, the same as one that matched nothing.
+	// RuleActionLog permits the statement and records the match.
 	RuleActionLog RuleAction = "LOG"
-	// RuleActionAlert raises severity on the audit record. Non-blocking and,
-	// like LOG, non-deciding.
+	// RuleActionAlert permits the statement and raises severity on the audit
+	// record.
 	RuleActionAlert RuleAction = "ALERT"
 	// RuleActionDeny closes the connection. Beats a matching ALLOW wherever
 	// either sits in the list.
 	RuleActionDeny RuleAction = "DENY"
-	// RuleActionAllow permits the statement. These rules are what a policy
-	// actually grants; everything not granted is refused.
+	// RuleActionAllow permits the statement silently. LOG and ALERT permit
+	// too; ALLOW is the one that records nothing, for traffic that is simply
+	// expected.
 	RuleActionAllow RuleAction = "ALLOW"
 )
 

@@ -63,17 +63,16 @@ spec:
                   for facts the data plane cannot know -- cluster name, deployment tier.
                 type: object
               rules:
-                description: "Rules form an ALLOWLIST. A statement that no ALLOW rule
-                  matches is\ndenied.\n\nEvery rule is evaluated -- there is no short-circuit
+                description: "Rules form an ALLOWLIST. A statement matching NO rule
+                  is denied.\n\nEvery rule is evaluated -- there is no short-circuit
                   -- and the outcome\nis decided by action rather than by position:\n\n\tany
-                  DENY  -> denied\n\telse any ALLOW -> permitted\n\telse      -> denied,
-                  implicitly\n\nDeciding by action means a carve-out cannot be defeated
-                  by where someone\nput it in the list. LOG and ALERT are telemetry:
-                  they never decide\nanything, and a statement matching only those
-                  is denied by the implicit\nrule.\n\nAt least one ALLOW is required.
-                  Without it the policy permits nothing and\nevery connection dies
-                  on its first statement, while the listener reports\nhealthy -- a
-                  database closed by accident and reported fine."
+                  DENY match  -> denied\n\tany other match -> permitted\n\tno match
+                  at all -> denied, implicitly\n\nOnly DENY refuses. ALLOW permits
+                  silently, LOG permits and records,\nALERT permits and raises --
+                  so a rule set of nothing but LOG rules is a\nvalid allowlist: it
+                  permits what it logs and the implicit rule refuses\nthe rest.\n\nDeciding
+                  by action means a carve-out cannot be defeated by where someone\nput
+                  it in the list."
                 items:
                   description: AccessRule is one CEL rule evaluated per statement.
                   properties:
@@ -158,11 +157,6 @@ spec:
                 minItems: 1
                 type: array
                 x-kubernetes-list-type: atomic
-                x-kubernetes-validations:
-                - message: 'at least one ALLOW rule is required: rules are an allowlist,
-                    so without one this policy permits nothing and every statement
-                    is denied'
-                  rule: self.exists(r, r.action == 'ALLOW')
               simulationMode:
                 description: |-
                   SimulationMode evaluates every rule and reports what would have happened
