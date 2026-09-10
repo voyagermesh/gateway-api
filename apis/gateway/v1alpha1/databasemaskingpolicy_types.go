@@ -167,14 +167,17 @@ type MaskingRule struct {
 	// +kubebuilder:validation:MaxItems=32
 	ExemptRoles []string `json:"exemptRoles,omitempty"`
 
-	// Catalogs are the logical databases this rule applies to. Empty means
-	// every catalog on the instance, which is what a rule written before this
-	// field existed meant and still means.
+	// Catalogs are the logical databases this rule applies to. Required.
 	//
 	// One KubeDB instance serves many logical databases, and this policy
-	// attaches to a route, which is the whole instance. Without this a rule
-	// naming "email" masks that column in databases it was never written
-	// about.
+	// attaches to a route, which is the whole instance. A masking rule matches
+	// on a column NAME, and a name is not unique across those databases -- so
+	// a rule naming "email" with no catalog masks that column in databases
+	// nobody wrote it for.
+	//
+	// Required rather than optional-meaning-everywhere, so that "unscoped" is
+	// not expressible: admission refuses it here, and the filter refuses it
+	// again at load.
 	//
 	// Compared EXACTLY -- not case-folded -- against the database name the
 	// client sent in its startup packet, which is the same value the access
@@ -182,12 +185,13 @@ type MaskingRule struct {
 	// connection: Postgres has no USE statement, refuses cross-database
 	// references, and psql's \c opens a new connection.
 	//
-	// +optional
+	// +kubebuilder:validation:MinItems=1
 	// +kubebuilder:validation:MaxItems=16
-	Catalogs []string `json:"catalogs,omitempty"`
+	Catalogs []string `json:"catalogs"`
 
 	// Tables this rule applies to, SCHEMA-QUALIFIED ("damtest.customers").
-	// Empty means every table.
+	// Optional; empty means every table in Catalogs -- a refinement within a
+	// database that is already named, not "everywhere".
 	//
 	// Matched case-insensitively against the tables the statement being
 	// answered referenced. Note what that scopes on: it is the statement's
