@@ -166,6 +166,45 @@ type MaskingRule struct {
 	// +optional
 	// +kubebuilder:validation:MaxItems=32
 	ExemptRoles []string `json:"exemptRoles,omitempty"`
+
+	// Catalogs are the logical databases this rule applies to. Empty means
+	// every catalog on the instance, which is what a rule written before this
+	// field existed meant and still means.
+	//
+	// One KubeDB instance serves many logical databases, and this policy
+	// attaches to a route, which is the whole instance. Without this a rule
+	// naming "email" masks that column in databases it was never written
+	// about.
+	//
+	// Compared EXACTLY -- not case-folded -- against the database name the
+	// client sent in its startup packet, which is the same value the access
+	// rules compare as request.database.name. It is fixed for the life of a
+	// connection: Postgres has no USE statement, refuses cross-database
+	// references, and psql's \c opens a new connection.
+	//
+	// +optional
+	// +kubebuilder:validation:MaxItems=16
+	Catalogs []string `json:"catalogs,omitempty"`
+
+	// Tables this rule applies to, SCHEMA-QUALIFIED ("damtest.customers").
+	// Empty means every table.
+	//
+	// Matched case-insensitively against the tables the statement being
+	// answered referenced. Note what that scopes on: it is the statement's
+	// tables, not the table each returned column genuinely came from. The
+	// wire does carry the latter, as a table OID per field, but resolving it
+	// needs a catalog lookup the proxy cannot make, the number differs per
+	// database, it changes when a table is recreated, and it is absent for
+	// anything that is not a plain column reference.
+	//
+	// The consequence to know: a statement joining two tables matches a rule
+	// naming either, so a column of that name is masked in both. That is the
+	// safe direction for a masking control, and the same direction
+	// ExemptRoles already fails in.
+	//
+	// +optional
+	// +kubebuilder:validation:MaxItems=64
+	Tables []string `json:"tables,omitempty"`
 }
 
 // PiiPattern is a named RE2 regex used for response-side PII detection.

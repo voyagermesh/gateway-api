@@ -76,6 +76,26 @@ spec:
                 items:
                   description: MaskingRule is one column-masking rule.
                   properties:
+                    catalogs:
+                      description: |-
+                        Catalogs are the logical databases this rule applies to. Empty means
+                        every catalog on the instance, which is what a rule written before this
+                        field existed meant and still means.
+
+                        One KubeDB instance serves many logical databases, and this policy
+                        attaches to a route, which is the whole instance. Without this a rule
+                        naming "email" masks that column in databases it was never written
+                        about.
+
+                        Compared EXACTLY -- not case-folded -- against the database name the
+                        client sent in its startup packet, which is the same value the access
+                        rules compare as request.database.name. It is fixed for the life of a
+                        connection: Postgres has no USE statement, refuses cross-database
+                        references, and psql's \c opens a new connection.
+                      items:
+                        type: string
+                      maxItems: 16
+                      type: array
                     columns:
                       description: Columns this rule applies to, matched by name,
                         case-insensitively.
@@ -117,6 +137,27 @@ spec:
                       format: int32
                       maximum: 64
                       type: integer
+                    tables:
+                      description: |-
+                        Tables this rule applies to, SCHEMA-QUALIFIED ("damtest.customers").
+                        Empty means every table.
+
+                        Matched case-insensitively against the tables the statement being
+                        answered referenced. Note what that scopes on: it is the statement's
+                        tables, not the table each returned column genuinely came from. The
+                        wire does carry the latter, as a table OID per field, but resolving it
+                        needs a catalog lookup the proxy cannot make, the number differs per
+                        database, it changes when a table is recreated, and it is absent for
+                        anything that is not a plain column reference.
+
+                        The consequence to know: a statement joining two tables matches a rule
+                        naming either, so a column of that name is masked in both. That is the
+                        safe direction for a masking control, and the same direction
+                        ExemptRoles already fails in.
+                      items:
+                        type: string
+                      maxItems: 64
+                      type: array
                     type:
                       description: Type of transform to apply.
                       enum:
