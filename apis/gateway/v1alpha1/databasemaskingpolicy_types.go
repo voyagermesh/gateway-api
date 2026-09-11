@@ -68,35 +68,70 @@ type DatabaseMaskingPolicySpec struct {
 	// +kubebuilder:validation:MaxItems=16
 	TargetRefs []gwv1.LocalPolicyTargetReferenceWithSectionName `json:"targetRefs"`
 
+	// Catalogs are the logical databases this policy governs, each carrying its
+	// own masking rules and DLP patterns.
+	//
+	// One KubeDB instance serves many logical databases and this policy attaches
+	// to a route, which is the whole instance -- so every rule and every pattern
+	// here is about ONE of them. Nesting says so structurally: scope cannot be
+	// omitted, a rule id need only be unique within its catalog, and two
+	// catalogs may each define a pattern called "ssn" without colliding.
+	//
+	// That last part is why patterns moved in here rather than staying beside
+	// the rules. A pattern name is what `pii_kinds` reports, and holding the
+	// names unique across a whole route forced either a refused policy or names
+	// disambiguated by hand -- which then registered the same regex twice and
+	// counted every match twice.
+	//
+	// A logical database with no entry is neither masked nor scanned. Scope is
+	// explicit, so a database nobody wrote policy for gets none.
+	//
+	// +kubebuilder:validation:MinItems=1
+	// +listType=map
+	// +listMapKey=name
+	Catalogs []MaskingCatalog `json:"catalogs"`
+}
+
+// MaskingCatalog is one logical database's masking configuration.
+type MaskingCatalog struct {
+	// Name of the logical database, as it arrives in the connection's startup
+	// packet. Compared exactly, the same way the access policy's CEL compares
+	// request.database.name -- folding one and not the other would make
+	// neighbouring controls disagree about the same string.
+	//
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
 	// MaskingRules rewrite column values on their way back to the client.
 	//
-	// Columns are matched by NAME ONLY and case-insensitively; schema-qualified
-	// matching is not supported, so a rule on `card_number` applies to that
-	// column in every table the connection reads.
+	// Columns are matched by NAME ONLY and case-insensitively, so a rule on
+	// `card_number` applies to that column in every table of THIS catalog that
+	// has one -- narrow it with Tables when that is too broad.
 	//
-	// +optional
-	// +kubebuilder:validation:MaxItems=64
-	// +kubebuilder:validation:items:XValidation:rule="self.type != 'PARTIAL' || has(self.showLast)",message="showLast is required when type is PARTIAL"
+	// +listType=map
+	// +listMapKey=id
 	MaskingRules []MaskingRule `json:"maskingRules,omitempty"`
 
 	// PiiPatterns are RE2 regexes evaluated against response payloads to count
-	// exposed sensitive values. Detection only -- patterns never block.
+	// exposed sensitive values in this catalog. Detection only -- patterns
+	// never block.
 	//
 	// Scanning happens BEFORE masking, so a column that is both masked and
-	// matched by a pattern is still counted. That is deliberate: the counters
-	// are compliance evidence of what was present, and whether a masked column
-	// should also alert is a question for DatabaseAccessPolicy.
+	// matched is still counted. That is deliberate: the counters are evidence
+	// of what was present, and whether a masked column should also alert is a
+	// question for DatabaseAccessPolicy.
 	//
-	// +optional
-	// +kubebuilder:validation:MaxItems=32
+	// +listType=map
+	// +listMapKey=name
 	PiiPatterns []PiiPattern `json:"piiPatterns,omitempty"`
 
 	// DlpMaxHitsPerPattern caps how many times a single pattern is counted per
 	// field, bounding the cost of a pathological payload. 0 means the filter
 	// default (64).
 	//
-	// +optional
-	// +kubebuilder:validation:Maximum=65535
+	// Per catalog rather than per route: it belongs beside the patterns it
+	// bounds, and one value per route meant two policies could each set it
+	// with nothing to say which won.
 	DlpMaxHitsPerPattern *uint32 `json:"dlpMaxHitsPerPattern,omitempty"`
 }
 
@@ -167,30 +202,9 @@ type MaskingRule struct {
 	// +kubebuilder:validation:MaxItems=32
 	ExemptRoles []string `json:"exemptRoles,omitempty"`
 
-	// Catalogs are the logical databases this rule applies to. Required.
-	//
-	// One KubeDB instance serves many logical databases, and this policy
-	// attaches to a route, which is the whole instance. A masking rule matches
-	// on a column NAME, and a name is not unique across those databases -- so
-	// a rule naming "email" with no catalog masks that column in databases
-	// nobody wrote it for.
-	//
-	// Required rather than optional-meaning-everywhere, so that "unscoped" is
-	// not expressible: admission refuses it here, and the filter refuses it
-	// again at load.
-	//
-	// Compared EXACTLY -- not case-folded -- against the database name the
-	// client sent in its startup packet, which is the same value the access
-	// rules compare as request.database.name. It is fixed for the life of a
-	// connection: Postgres has no USE statement, refuses cross-database
-	// references, and psql's \c opens a new connection.
-	//
-	// +kubebuilder:validation:MinItems=1
-	// +kubebuilder:validation:MaxItems=16
-	Catalogs []string `json:"catalogs"`
 
 	// Tables this rule applies to, SCHEMA-QUALIFIED ("damtest.customers").
-	// Optional; empty means every table in Catalogs -- a refinement within a
+	// Optional; empty means every table in this catalog -- a refinement within a
 	// database that is already named, not "everywhere".
 	//
 	// Matched case-insensitively against the tables the statement being
