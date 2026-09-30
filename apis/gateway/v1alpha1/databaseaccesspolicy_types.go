@@ -69,13 +69,13 @@ type DatabaseAccessPolicySpec struct {
 	// is decided by action rather than by position:
 	//
 	//	any DENY match  -> denied
-	//	any other match -> permitted
-	//	no match at all -> denied, implicitly
+	//	any ALLOW match -> permitted
+	//	otherwise       -> denied, implicitly
 	//
-	// Only DENY refuses. ALLOW permits silently, LOG permits and records,
-	// ALERT permits and raises -- so a rule set of nothing but LOG rules is a
-	// valid allowlist: it permits what it logs and the implicit rule refuses
-	// the rest.
+	// Only ALLOW grants and only DENY refuses. LOG and ALERT observe: a match
+	// is recorded with its severity (LOG to record, ALERT to raise) and takes
+	// no part in the decision -- so a rule written to watch something can
+	// never open it. A rule set of nothing but LOG rules refuses everything.
 	//
 	// Deciding by action means a carve-out cannot be defeated by where someone
 	// put it in the list.
@@ -102,23 +102,22 @@ type DatabaseAccessPolicySpec struct {
 
 // RuleAction is what happens when a rule matches.
 //
-// Only DENY refuses. Every other action permits.
+// Only ALLOW grants and only DENY refuses; LOG and ALERT observe.
 //
 // +kubebuilder:validation:Enum=LOG;ALERT;DENY;ALLOW
 type RuleAction string
 
 const (
-	// RuleActionLog permits the statement and records the match.
+	// RuleActionLog records the match. It decides nothing: the statement is
+	// permitted or refused by the ALLOW and DENY rules alone.
 	RuleActionLog RuleAction = "LOG"
-	// RuleActionAlert permits the statement and raises severity on the audit
-	// record.
+	// RuleActionAlert records the match and raises it. Like LOG, it decides
+	// nothing.
 	RuleActionAlert RuleAction = "ALERT"
 	// RuleActionDeny closes the connection. Beats a matching ALLOW wherever
 	// either sits in the list.
 	RuleActionDeny RuleAction = "DENY"
-	// RuleActionAllow permits the statement silently. LOG and ALERT permit
-	// too; ALLOW is the one that records nothing, for traffic that is simply
-	// expected.
+	// RuleActionAllow permits the statement. The only action that grants.
 	RuleActionAllow RuleAction = "ALLOW"
 )
 

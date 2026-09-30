@@ -66,12 +66,13 @@ spec:
                 description: "Rules form an ALLOWLIST. A statement matching NO rule
                   is denied.\n\nEvery rule is evaluated -- there is no short-circuit
                   -- and the outcome\nis decided by action rather than by position:\n\n\tany
-                  DENY match  -> denied\n\tany other match -> permitted\n\tno match
-                  at all -> denied, implicitly\n\nOnly DENY refuses. ALLOW permits
-                  silently, LOG permits and records,\nALERT permits and raises --
-                  so a rule set of nothing but LOG rules is a\nvalid allowlist: it
-                  permits what it logs and the implicit rule refuses\nthe rest.\n\nDeciding
-                  by action means a carve-out cannot be defeated by where someone\nput
+                  DENY match  -> denied\n\tany ALLOW match -> permitted\n\totherwise
+                  \      -> denied, implicitly\n\nOnly ALLOW grants and only DENY
+                  refuses. LOG and ALERT observe: a match\nis recorded with its severity
+                  (LOG to record, ALERT to raise) and takes\nno part in the decision
+                  -- so a rule written to watch something can\nnever open it. A rule
+                  set of nothing but LOG rules refuses everything.\n\nDeciding by
+                  action means a carve-out cannot be defeated by where someone\nput
                   it in the list."
                 items:
                   description: AccessRule is one CEL rule evaluated per statement.
